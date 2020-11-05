@@ -3,11 +3,17 @@ require('dotenv').config();
 const express = require('express');
 const app = express();
 const path = require('path');
+const { upload } = require('./modules/multer-conn');
+//const multer = require('multer');
+//const upload = multer({ dest: path.join(__dirname, './uploads/') });  //멀터에게 속성을 줌. 저장되는 폴더를 uploads로
+//const { v4: uuidv4 } = require('uuid'); //v4라는 변수에 uuidv4를 기본값으로 넣으라는 얘기
+//var uid = uuidv4(); // ⇨ '1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed' // 그 uuid4를 가져다 씀 > 난수 발생함. 유니크한 아이디
 
 
 /** 내 modules  ***************************************************/
 //module
-const { pool } = require('./modules/mysql-conn');
+//const { pool } = require('./modules/mysql-conn');
+const logger = require('./modules/morgan-conn');
 //router들
 const boardRouter = require('./routes/board');
 const galleryRouter = require('./routes/gallery');
@@ -17,6 +23,7 @@ const galleryRouter = require('./routes/gallery');
 app.listen(process.env.PORT, () => {
 	console.log(`http://127.0.0.1:${process.env.PORT}`); 
 }); //콜백함수는 반드시 안 써도 된다 /콜백함수 자리에 Server start라고 치기도.. 주소 치기 귀찮으니까 쓰는 듯 클릭해서 가게..
+		//시간차가 있음. 콜백함수는 .그래서 비동기다?
 
 
 /** Initialize  ***************************************************/
@@ -26,18 +33,31 @@ app.locals.pretty = true; //클라이언트가 받는 html이 들여쓰기가 �
 
 
 /** Middleware  ***************************************************/
+//app.use(logger, express.json(), express.urlencoded({extended: false})); //함수를 만들때 인자가 req, res, next가 있으면 이게 미들웨어이다
+//미들웨어를 쉼표로 계속 연결할 수 있다!
+app.use(logger);
 app.use(express.json()); //받게 되는 모든 요청들을 json 파일로 바꿈
 app.use(express.urlencoded({extended: false}));
 
 
-/** Routers  ***************************************************/
+/** Routers (라우터가 있는 미들웨어. 있으면 걸리고 아니면 다음 다음) ***************************************************/
 app.use('/', express.static(path.join(__dirname, './public'))) //root로 들어올 경우 보낼 경로 지정 (절대 경로)
+app.use('/storage', express.static(path.join(__dirname, './uploads')))
 app.use('/board', boardRouter); // /board로 요청들어오면 boardRouter로 연결
 app.use('/gallery', galleryRouter);
 /* app.get('/err', (req, res, next) => {
 	const err = new Error();
 	next(err); //next에 err 객체를 넣으면 무조건 저 마지막 라우터로 간다
 }); */
+
+app.get('/test/upload', (req, res, next) => {
+	res.render('test/upload');
+});
+app.post('/test/save', upload.single('upfile'), (req, res, next) => {//upload.single('upfile')이라는 미들웨어를 중간에 거쳐서 가게 함
+//upload.single('upfile')미들웨어가 난수로 uploads폴더에 파일을 저장한다. 고로 API를 써서 입맛에 맞게 저장할 수 있다(유니크한 아이디)
+	const { title, upfile } = req.body;
+	res.redirect('/board');
+});
 
 
 /** error 예외처리  ***************************************************/
