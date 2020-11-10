@@ -1,9 +1,11 @@
 const express = require('express');
 //const { createPool } = require('mysql2/promise');
 const moment = require('moment');
+const path = require('path');
 const router = express.Router();
 const { pool } = require('../modules/mysql-conn');
 const { alert } = require('../modules/util');
+const { upload, imgExt } = require('../modules/multer-conn');
 
 router.get(['/', '/list'], async (req, res, next) => {
 	//const pug = {title: '게시판 리스트', js: 'board', css:'board'};
@@ -32,7 +34,6 @@ router.get(['/', '/list'], async (req, res, next) => {
 	catch(e) {
 		next(e);
 	}
-
 });
 
 router.get(['/write'], (req, res, next) => {
@@ -40,10 +41,22 @@ router.get(['/write'], (req, res, next) => {
 	res.render('./board/write.pug', pug);
 });
 
-router.post(['/save'], async (req, res, next) => {
+router.post(['/save'],upload.single('upfile'), async (req, res, next) => {
 	const { title, content, writer } = req.body; //write.pug에서 쓴 내용 받기 (구조분해할당으로)
-	var values = [title, writer, content ];
+	const values = [title, writer, content ];
 	var sql = 'INSERT INTO board set title=?, writer=?, content=?';
+
+	if(req.allowUpload) {//파일을 안올리면 allowUpload와 file 모두 생성 안되고, 허락안되는 파일이면 allowUpload만 생성됨. 허락되는 파일은 둘 다 생성
+		if(req.allowUpload.allow) { //파일 올린 거 (allow가 true인 거)
+			sql += ', savefile=?, realfile=?'; //filename이 저장된 파일 이름이고 originalname이 사용자가 올린 파일 이름
+			values.push(req.file.filename);
+			values.push(req.file.originalname);
+		}
+		else { //파일 안 올린 거 (allow가 false인 거)
+			res.send(alert(`${req.allowUpload.ext}은(는) 업로드 할 수 없습니다.`, '/board'));
+		}
+	}
+
 	try {
 		const connect = await pool.getConnection(); //커넥션 객체 받기
 		const rs = await connect.query(sql, values); //쿼리 결과 rs로 받기
@@ -67,6 +80,12 @@ router.get('/view/:id', async (req, res) => {
 		connect.release();
 		pug.list = rs[0][0];
 		pug.list.wdate = moment(pug.list.wdate).format('YYYY-MM-DD HH:mm:ss');
+		if(pug.list.savefile) { //첨부파일이 있다면
+			var ext = path.extname(pug.list.savefile).toLowerCase().replace('.', ''); //확장자 가져옴
+			if(imgExt.indexOf(ext) > -1) {
+				pug.list.imgSrc = `/storage/${pug.list.savefile.substr(0, 6)}/${pug.list.savefile}`; //0번째부터 6개까지만 자름 => 폴더명 만듦 / 파일명붙임 => 이미지 경로 만든 것
+			}
+		}
 		res.render('./board/view.pug', pug);
 	}
 	catch(e) {

@@ -36,7 +36,12 @@ app.locals.pretty = true; //클라이언트가 받는 html이 들여쓰기가 �
 //app.use(logger, express.json(), express.urlencoded({extended: false})); //함수를 만들때 인자가 req, res, next가 있으면 이게 미들웨어이다
 //미들웨어를 쉼표로 계속 연결할 수 있다!
 app.use(logger);
-app.use(express.json()); //받게 되는 모든 요청들을 json 파일로 바꿈
+//app.use((req, res, next) => { }) => 이게 미들 웨어이다
+//app.use(express.json()); //받게 되는 모든 요청들을 json 파일로 바꿈
+app.use((req, res, next) => { //이런 식으로 쓸 수도 있음. express 객체에 여러 개를 거쳐서 실행하게 하고프면?
+	express.test = "aaa"
+	express.json()(req, res, next) //iife 즉시 실행함수?
+})
 app.use(express.urlencoded({extended: false}));
 
 
@@ -53,11 +58,22 @@ app.use('/gallery', galleryRouter);
 app.get('/test/upload', (req, res, next) => {
 	res.render('test/upload');
 });
-app.post('/test/save', upload.single('upfile'), (req, res, next) => {//upload.single('upfile')이라는 미들웨어를 중간에 거쳐서 가게 함
+//#1
+app.post('/test/save', upload.single('upfile'), (req, res, next) => {//upload.single('upfile')이라는 미들웨어를 중간에 거쳐서 끝나고 가게 함
 //upload.single('upfile')미들웨어가 난수로 uploads폴더에 파일을 저장한다. 고로 API를 써서 입맛에 맞게 저장할 수 있다(유니크한 아이디)
-	const { title, upfile } = req.body;
-	res.redirect('/board');
+	//const { title, upfile } = req.body;
+	//res.redirect('/board');
+	//res.json(req.body);
+	res.json(req.file); //multer가 req 객체에 file을 만들어서 거기에 파일 정보 넣어줌?
+	//req.file; //uplode 미들웨어를 지났으니까 req.file 가져올 수 있음
+	//req.allowUpload;
+	//res.json(req.allowUpload);
 });
+//#2. 이렇게 쓸 수도 있다는 것 (미들웨어)
+/* app.post('/test/save', (req, res, next) => {
+	upload.single('upfile')(req, res, next);
+	res.json(req.allowUpload);
+}); */
 
 
 /** error 예외처리  ***************************************************/

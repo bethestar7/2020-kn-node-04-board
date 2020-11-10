@@ -18,6 +18,9 @@ block content
 						td= v.id
 						td.text-left
 							a(href=`/board/view/${v.id}`)= v.title
+								//- savefile 존재한다면 파일아이콘 하나 붙였음
+								if v.savefile	
+									i.fa.fa-file.ml-2
 						td= v.writer
 						td.text-left= v.content
 						td= v.wdate
