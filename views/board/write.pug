@@ -9,7 +9,15 @@ block content
 				input(type="hidden" name="id" value=`${list && list.id ? list.id : ''}`)
 				input.form-control(type="text" name="title" placeholder="제목을 입력하세요." value=`${list && list.title ? list.title : ''}`)
 				input.form-control(type="text" name="writer" placeholder="작성자를 입력하세요." value=`${list && list.writer ? list.writer : ''}`)
-				input.form-control-file(name="upfile" type="file")
+				div
+					//- 객체가 존재하고 list && 그 객체의 일부값이 list.savefile이 있어야 함! list&& 안 쓰고 그냥 list.savefile하면 오류남
+					if list && list.savefile
+						.file-wrap.py-2.mb-2.border-bottom
+							span.font-weight-bold= list.realfile
+							a.fa.fa-times-circle.ml-2(href=`javascript: fileRemove(${list.id})`)
+							//-i.fa.fa-times-circle.ml-2(onclick=`javascript: fileRemove(${list.id})`)
+							//-버튼눌렀을때 페이지 이동하면 안되니까 ajax를 사용해야 함
+					input.form-control-file(name="upfile" type="file")
 				textarea.form-control(name="content" placeholder="내용을 입력하세요.")= `${list && list.content ? list.content : ''}`
 				hr
 				if list

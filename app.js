@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const app = express();
 const path = require('path');
+const createError = require('http-errors');
 const { upload } = require('./modules/multer-conn');
 //const multer = require('multer');
 //const upload = multer({ dest: path.join(__dirname, './uploads/') });  //멀터에게 속성을 줌. 저장되는 폴더를 uploads로
@@ -77,16 +78,27 @@ app.post('/test/save', upload.single('upfile'), (req, res, next) => {//upload.si
 
 
 /** error 예외처리  ***************************************************/
-app.use((req, res, next) => { // 경로를 적지 않은 건, 맞는 라우터를 찾지 못한 애들이 여기에 걸리도록 하는 것
+/* app.use((req, res, next) => { // 경로를 적지 않은 건, 맞는 라우터를 찾지 못한 애들이 여기에 걸리도록 하는 것
 	const err = new Error(); //에러객체 만들기
 	err.code = 404; //만든 에러 객체에 코드 심기
 	err.msg = '요청하신 페이지를 찾을 수 없습니다.';
 	next(err); //에러 객체를 다음 라우터로 보낸다  / 모든 에러가 모일 맨 밑의 라우터(미들웨어)로 보내는 것
-});
+}); */
 
-app.use((err, req, res, next) => { //에러를 모으는 맨 마지막 라우터는 인자가 총 네개이다. 위의 에러를 받을 error 인자
+/* app.use((err, req, res, next) => { //에러를 모으는 맨 마지막 라우터는 인자가 총 네개이다. 위의 에러를 받을 error 인자
 	console.log(err); //이거하면 오류코드를 터미널창에서 볼 수 있음
 	const code = err.code || 500; //err.code가 있다면 걔를 넣고 아니면 500을 넣어라
 	const msg = err.msg || '서버 내부 오류입니다. 관리자에게 문의하세요.';
+	res.render('./error.pug', { code, msg });
+}); */
+
+app.use((req, res, next) => {
+	next(createError(404, '요청하신 페이지를 찾을 수 없습니다.'));
+});
+app.use((err, req, res, next) => {
+	let code = err.status || 500;
+	let message = err.status == 404 ? 
+	'페이지를 찾을 수 없습니다.' : '서버 내부 오류입니다. 관리자에게 문의하세요.'
+	let msg = process.env.SERVICE !=='production' ? err.msg || message : message;
 	res.render('./error.pug', { code, msg });
 });

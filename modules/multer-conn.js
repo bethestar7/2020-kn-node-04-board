@@ -3,7 +3,7 @@ const moment = require('moment');
 const path = require('path');
 const fs = require('fs'); //fs => 노드에 있는 filesystem 모듈 /https://nodejs.org/api/fs.html 참고 (deprecated는곧없어질함수)
 const fsp = require('fs/promises');
-const { v4: uuidv4 } = require('uuid'); //유니크한 아이디 만듦. 난수 발생
+const { v4: uuidv4 } = require('uuid'); //유니크한 아이디 만듦. 난수 발생 / uuid의 v4를 uuidv4에 담아라(구조분해할당)
 const allowExt = ['.jpg', 'jpeg', 'png', 'gif', 'doc', 'docx', 'ppt', 'pptx', 'pdf', 'hwp']; //허용하는 확장자 저장
 const imgExt = ['.jpg', 'jpeg', 'png', 'gif']; //이미지 확장자 저장
 
