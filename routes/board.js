@@ -118,7 +118,7 @@ router.post('/saveUpdate', upload.single('upfile'), async (req, res, next) => {
 	let connect, rs, temp;
 	try {
 		if(req.allow === false) res.send(alert(`${req.ext}은(는) 업로드 할 수 없습니다.`, '/board')); //
-			//undefiend=>첨부파일안건드린거(첨부파일없는거) / 
+			//undefiend=>첨부파일안건드린거(첨부파일없는거) => 이걸 걸러내기 위해서 정확히 allow false인 것만 딱 잡아서 해주는 것
 		else {
 			connect = await pool.getConnection();
 			if(req.file) {
