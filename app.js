@@ -95,10 +95,11 @@ app.post('/test/save', upload.single('upfile'), (req, res, next) => {//upload.si
 app.use((req, res, next) => {
 	next(createError(404, '요청하신 페이지를 찾을 수 없습니다.'));
 });
+
 app.use((err, req, res, next) => {
 	let code = err.status || 500;
 	let message = err.status == 404 ? 
-	'페이지를 찾을 수 없습니다.' : '서버 내부 오류입니다. 관리자에게 문의하세요.'
-	let msg = process.env.SERVICE !=='production' ? err.msg || message : message;
+	'페이지를 찾을수 없습니다.' : '서버 내부 오류입니다. 관리자에게 문의하세요.'
+	let msg = process.env.SERVICE == 'production' ? message : err.message;
 	res.render('./error.pug', { code, msg });
 });

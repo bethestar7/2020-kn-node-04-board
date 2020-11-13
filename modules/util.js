@@ -7,8 +7,18 @@ const alert = (msg, loc=null) => {
 	return html;
 }
 
-const uploadFolder = (filename) => { //내가 전달받은 filename
-	return path.join(__dirname, '../uploads', filename.substr(0,6), filename);
+const uploadFolder = (filename) => {
+	return path.join(__dirname, '../uploads', filename.substr(0, 6), filename);
 }
 
-module.exports = { alert, uploadFolder };
+const imgFolder = (filename) => {
+	return path.join('/storage', filename.substr(0, 6), filename); //upload폴더를 모르게 storage로 경로 변경 /storage로 클라이언트가 접근하면 uploads폴더로 접근하게끔
+}
+
+const extGen = (filename, mode='L') => {
+	let ext = path.extname(filename).replace(".", "");
+	return mode == 'U' ? ext.toUpperCase() : ext.toLowerCase(); 
+}
+
+
+module.exports = { alert, uploadFolder, imgFolder, extGen };

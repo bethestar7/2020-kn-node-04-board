@@ -50,12 +50,15 @@ const makeFolder = () => {
 //https://www.npmjs.com/package/multer 참고
 const fileFilter = (req, file, cb) => {
 	const ext = path.extname(file.originalname).toLowerCase().replace(".", ""); //originalname받아서 다 소문자로 만들고 .을 공백으로 만듦 
-	if(allowExt.indexOf(ext) > -1) { //찾았다면 허락 (alllowExt의 배열 중에 ext 가 있다면 0보다 클 테니까. 없으면 0이 나올테니까)
-		req.allowUpload = {allow: true, ext};
+	if(allowExt.includes(ext)) { //찾았다면 허락 (alllowExt의 배열 중에 ext 가 있다면 0보다 클 테니까. 없으면 0이 나올테니까)
+		req.allow = true;
+		req.ext = ext;
 		cb(null, true); 
 	}
 	else {
-		req.allowUpload = {allow: false, ext}; //찾지못했다면 불허
+		//req.allowUpload = {allow: false, ext}; //찾지못했다면 불허
+		req.allow = false;
+		req.ext = ext;
 		cb(null, false); 
 	}
 }
@@ -73,6 +76,8 @@ const storage = multer.diskStorage({ //diskStorage 가 실행되면 콜백함수
   }
 });
  
+
+
 const upload = multer({ storage, fileFilter, limits: {fileSize: 2048000} }); //storage: storage 라고 써도 됨 /2mb정도로 제한
 
 
