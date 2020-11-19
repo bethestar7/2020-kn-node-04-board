@@ -4,7 +4,7 @@
 // cookie : 클라이언트가 가지는 전역 변수
 // CORS (Cross Origin Resource Share): 통신 규칙
 // proxy - forward proxy
-// proxy - reverse proxy
+// proxy - reverse proxy 내부에서 도는 프록시
 
 
 //crypt
@@ -29,3 +29,16 @@ let decipher = crypto.createDecipher('aes-256-cbc', salt); //복호화
 let result2 = decipher.update(result, 'base64', 'utf-8');
 result2 += decipher.final('utf-8');
 console.log(result2);
+
+
+//bcrypt 모듈 사용하기
+const bcrypt = require('bcrypt');
+
+async function bcryptTest(){
+	let bcryptHash = await bcrypt.hash(password+salt, 9); //암호화
+	let bcryptHash2 = await bcrypt.hash(password+salt, 9); //암호화 / 할 때마다 돌리는 게 다르다. 9라고 해서 동일하지 않음
+	let bcryptCompare = await	bcrypt.compare(password+salt, bcryptHash); //평문과 암호화된 것을 비교 => 일치하면 true
+	console.log(bcryptHash, bcryptHash2, bcryptCompare);
+};
+
+bcryptTest();

@@ -5,6 +5,7 @@ const app = express();
 const path = require('path');
 const createError = require('http-errors');
 const { upload } = require('./modules/multer-conn');
+const session = require('express-session');
 //const multer = require('multer');
 //const upload = multer({ dest: path.join(__dirname, './uploads/') });  //멀터에게 속성을 줌. 저장되는 폴더를 uploads로
 //const { v4: uuidv4 } = require('uuid'); //v4라는 변수에 uuidv4를 기본값으로 넣으라는 얘기
@@ -18,6 +19,7 @@ const logger = require('./modules/morgan-conn');
 //router들
 const boardRouter = require('./routes/board');
 const galleryRouter = require('./routes/gallery');
+const userRouter = require('./routes/user');
 
 
 /** Initialize  ***************************************************/
@@ -39,11 +41,26 @@ app.locals.pretty = true; //클라이언트가 받는 html이 들여쓰기가 �
 app.use(logger);
 //app.use((req, res, next) => { }) => 이게 미들 웨어이다
 //app.use(express.json()); //받게 되는 모든 요청들을 json 파일로 바꿈
-app.use((req, res, next) => { //이런 식으로 쓸 수도 있음. express 객체에 여러 개를 거쳐서 실행하게 하고프면?
+/* app.use((req, res, next) => { //이런 식으로 쓸 수도 있음. express 객체에 여러 개를 거쳐서 실행하게 하고프면?
 	express.test = "aaa"
 	express.json()(req, res, next) //iife 즉시 실행함수?
-})
+}) */
+app.use(express.json());
 app.use(express.urlencoded({extended: false}));
+/* app.use((req, res, next) => {
+	console.log(req.session);
+	next();
+}) */
+app.use(session({
+  secret: process.env.SESSION_SALT,
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false } //개발할때 false 아닐 땐 true https 쓸지말지임
+}))
+/* app.use((req, res, next) => {
+	console.log(req.session);
+	next();
+}) */
 
 
 /** Routers (라우터가 있는 미들웨어. 있으면 걸리고 아니면 다음 다음) ***************************************************/
@@ -51,6 +68,7 @@ app.use('/', express.static(path.join(__dirname, './public'))) //root로 들어�
 app.use('/storage', express.static(path.join(__dirname, './uploads')))
 app.use('/board', boardRouter); // /board로 요청들어오면 boardRouter로 연결
 app.use('/gallery', galleryRouter);
+app.use('/user', userRouter);
 /* app.get('/err', (req, res, next) => {
 	const err = new Error();
 	next(err); //next에 err 객체를 넣으면 무조건 저 마지막 라우터로 간다
